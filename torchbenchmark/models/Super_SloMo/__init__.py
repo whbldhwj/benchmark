@@ -16,6 +16,8 @@ from torchbenchmark.tasks import COMPUTER_VISION
 
 from torchbenchmark import DATA_PATH
 
+import torch_xla.core.xla_model as xm
+
 torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 
@@ -73,6 +75,8 @@ class Model(BenchmarkModel):
 
     def eval(self) -> Tuple[torch.Tensor]:
         out = self.model(*self.example_inputs)
+        if self.device == 'xla':
+            xm.mark_step()
         return out
 
     def train(self):

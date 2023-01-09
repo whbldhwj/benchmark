@@ -13,6 +13,8 @@ from torchbenchmark import DATA_PATH
 from .train_cyclegan import prepare_training_loop
 from .test_cyclegan import get_model
 
+import torch_xla.core.xla_model as xm
+
 def _create_data_dir(suffix):
     data_dir = Path(__file__).parent.joinpath(".data", suffix)
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -65,4 +67,6 @@ class Model(BenchmarkModel):
     def eval(self) -> Tuple[torch.Tensor]:
         model, example_inputs = self.get_module()
         out = model(*example_inputs)
+        if self.device == 'xla':
+            xm.mark_step()
         return (out, )

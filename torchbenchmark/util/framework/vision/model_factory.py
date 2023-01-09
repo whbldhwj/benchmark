@@ -7,6 +7,8 @@ from contextlib import nullcontext
 from torchbenchmark.util.model import BenchmarkModel
 from typing import Tuple, Generator, Optional
 
+import torch_xla.core.xla_model as xm
+
 class TorchVisionModel(BenchmarkModel):
     # To recognize this is a torchvision model
     TORCHVISION_MODEL = True
@@ -85,6 +87,8 @@ class TorchVisionModel(BenchmarkModel):
         example_inputs = self.example_inputs
         with self.amp_context():
             result = model(*example_inputs)
+        if self.device == 'xla':
+            xm.mark_step()
         return (result, )
 
     def enable_amp(self):

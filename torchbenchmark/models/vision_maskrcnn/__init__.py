@@ -24,6 +24,8 @@ coco.print = lambda *args: None
 torch.backends.cudnn.deterministic = False
 torch.backends.cudnn.benchmark = False
 
+import torch_xla.core.xla_model as xm
+
 CURRENT_DIR = Path(os.path.dirname(os.path.realpath(__file__)))
 DATA_DIR = os.path.join(CURRENT_DIR.parent.parent, "data", ".data", "coco2017-minimal")
 assert os.path.exists(DATA_DIR), "Couldn't find coco2017 minimal data dir, please run install.py again."
@@ -99,5 +101,7 @@ class Model(BenchmarkModel):
         with torch.no_grad():
             for _batch_id, (images, _targets) in zip(range(self.NUM_OF_BATCHES), self.data_loader):
                 out = self.model(images)
+                if self.device == 'xla':
+                    xm.mark_step()
         out = list(map(lambda x: x.values(), out))
         return tuple(itertools.chain(*out))

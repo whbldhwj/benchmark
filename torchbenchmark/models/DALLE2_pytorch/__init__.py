@@ -7,6 +7,7 @@ torch.backends.cudnn.benchmark = False
 from ...util.model import BenchmarkModel
 from torchbenchmark.tasks import COMPUTER_VISION
 
+import torch_xla.core.xla_model as xm
 
 class Model(BenchmarkModel):
     task = COMPUTER_VISION.GENERATION
@@ -18,7 +19,7 @@ class Model(BenchmarkModel):
 
         if self.device == "cpu":
             raise NotImplementedError("DALL-E 2 Not Supported on CPU")
-    
+
         self.clip = OpenAIClipAdapter().to(self.device)
 
         self.sample_text = self.example_input = torch.randint(0, 49408, (self.batch_size, 256)).to(self.device)
@@ -85,6 +86,9 @@ class Model(BenchmarkModel):
         model, inputs = self.get_module()
         with torch.inference_mode():
             images = model(*inputs)
+            if self.device == 'xla':
+                xm.mark_step()
+
         return (images,)
 
     def train(self):

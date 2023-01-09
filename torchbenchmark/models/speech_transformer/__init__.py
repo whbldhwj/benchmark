@@ -15,6 +15,8 @@ from ...util.model import BenchmarkModel
 from torchbenchmark.tasks import SPEECH
 from typing import Tuple
 
+import torch_xla.core.xla_model as xm
+
 NUM_TRAIN_BATCH = 1
 NUM_EVAL_BATCH = 1
 
@@ -56,6 +58,8 @@ class Model(BenchmarkModel):
 
     def eval(self) -> Tuple[torch.Tensor]:
         out = self.evalcfg.eval()
+        if self.device == 'xla':
+            xm.mark_step()
         # only the first element of model output is a tensor
         out = tuple(itertools.chain(*list(map(lambda x: x.values(), out))))
         return (out[0], )

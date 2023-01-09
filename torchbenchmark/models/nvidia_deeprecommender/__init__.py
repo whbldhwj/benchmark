@@ -18,6 +18,8 @@ import gc
 from .nvtrain import DeepRecommenderTrainBenchmark
 from .nvinfer import DeepRecommenderInferenceBenchmark
 
+import torch_xla.core.xla_model as xm
+
 class Model(BenchmarkModel):
 
   task = RECOMMENDATION.RECOMMENDATION
@@ -56,6 +58,8 @@ class Model(BenchmarkModel):
 
   def eval(self) -> Tuple[torch.Tensor]:
     out = self.model.eval()
+    if self.device == 'xla':
+      xm.mark_step()
     return (out, )
 
   def timed_infer(self):

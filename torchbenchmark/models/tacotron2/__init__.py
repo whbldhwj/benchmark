@@ -8,6 +8,7 @@ from ...util.model import BenchmarkModel
 from typing import Tuple
 from torchbenchmark.tasks import SPEECH
 
+import torch_xla.core.xla_model as xm
 
 class Model(BenchmarkModel):
     task = SPEECH.SYNTHESIS
@@ -135,4 +136,6 @@ class Model(BenchmarkModel):
     def eval(self) -> Tuple[torch.Tensor]:
         self.model.eval()
         out = self.model(self.example_inputs)
+        if self.device == 'xla':
+            xm.mark_step()
         return out

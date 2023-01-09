@@ -27,6 +27,7 @@ import higher
 from ...util.model import BenchmarkModel
 from torchbenchmark.tasks import OTHER
 
+import torch_xla.core.xla_model as xm
 
 class Model(BenchmarkModel):
     task = OTHER.OTHER_TASKS
@@ -113,4 +114,6 @@ class Model(BenchmarkModel):
         model.eval()
         with torch.no_grad():
             out = model(example_input)
+            if self.device == 'xla':
+                xm.mark_step()
         return (out, )

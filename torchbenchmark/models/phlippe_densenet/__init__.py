@@ -5,6 +5,7 @@ import torch
 from types import SimpleNamespace
 import torch.utils.data as data
 
+import torch_xla.core.xla_model as xm
 
 class DenseLayer(nn.Module):
 
@@ -194,4 +195,6 @@ class Model(BenchmarkModel):
         model.eval()
         with torch.no_grad():
             out = model(images)
+            if self.device == 'xla':
+                xm.mark_step()
         return (out,)

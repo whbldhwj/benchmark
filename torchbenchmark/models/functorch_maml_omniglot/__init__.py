@@ -10,6 +10,7 @@ from typing import Tuple
 from ...util.model import BenchmarkModel
 from torchbenchmark.tasks import OTHER
 
+import torch_xla.core.xla_model as xm
 
 def loss_for_task(net, n_inner_iter, x_spt, y_spt, x_qry, y_qry):
     params, buffers, fnet = net
@@ -102,4 +103,6 @@ class Model(BenchmarkModel):
         model.eval()
         with torch.no_grad():
             out = model(example_input)
+            if self.device == 'xla':
+                xm.mark_step()
         return (out, )

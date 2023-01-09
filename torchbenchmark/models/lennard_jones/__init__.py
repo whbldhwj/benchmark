@@ -12,6 +12,7 @@ from typing import Tuple
 from ...util.model import BenchmarkModel
 from torchbenchmark.tasks import OTHER
 
+import torch_xla.core.xla_model as xm
 
 sigma = 0.5
 epsilon = 4.
@@ -96,4 +97,6 @@ class Model(BenchmarkModel):
         model.eval()
         with torch.no_grad():
             out = make_prediction(model, self.drs)
+            if self.device == 'xla':
+                xm.mark_step()
         return out

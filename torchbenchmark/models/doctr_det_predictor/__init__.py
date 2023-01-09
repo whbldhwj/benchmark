@@ -9,6 +9,8 @@ from torchbenchmark.tasks import COMPUTER_VISION
 
 from typing import Tuple
 
+import torch_xla.core.xla_model as xm
+
 class Model(BenchmarkModel):
     task = COMPUTER_VISION.DETECTION
     DEFAULT_EVAL_BSIZE = 1
@@ -32,4 +34,6 @@ class Model(BenchmarkModel):
     def eval(self) -> Tuple[torch.Tensor]:
         with torch.inference_mode():
             out = self.model(self.example_inputs, return_model_output=True)
+            if self.device == 'xla':
+                xm.mark_step()
         return (out["out_map"], )

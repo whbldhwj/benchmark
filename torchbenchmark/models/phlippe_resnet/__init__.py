@@ -9,6 +9,7 @@ import torch
 import torch.optim as optim
 import torch.utils.data as data
 
+import torch_xla.core.xla_model as xm
 
 class ResNetBlock(nn.Module):
 
@@ -152,9 +153,11 @@ class Model(BenchmarkModel):
         loss.backward()
         self.optimizer.step()
         self.optimizer.zero_grad()
-    
+
     def eval(self):
         self.model.eval()
         with torch.no_grad():
             out=self.model(self.images)
+            if self.device == 'xla':
+                xm.mark_step()
         return (out,)

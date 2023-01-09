@@ -18,6 +18,8 @@ from typing import Optional, Tuple
 torch.backends.cudnn.deterministic = False
 torch.backends.cudnn.benchmark = True
 
+import torch_xla.core.xla_model as xm
+
 class DemucsWrapper(torch.nn.Module):
     def __init__(self, model: Demucs, augment: Sequential) -> None:
         super(DemucsWrapper, self).__init__()
@@ -67,7 +69,7 @@ class Model(BenchmarkModel):
             self.augment = Shift(args.data_stride)
 
         self.model = DemucsWrapper(model, self.augment)
-        
+
         if test == "train":
             self.model.train()
             self.optimizer = torch.optim.Adam(self.model.parameters(), lr=args.lr)
@@ -81,8 +83,14 @@ class Model(BenchmarkModel):
 
     def eval(self) -> Tuple[torch.Tensor]:
         sources, estimates = self.model(*self.example_inputs)
+        if self.device == "xla":
+            xm.mark_step()
         sources = center_trim(sources, estimates)
+        if self.device == "xla":
+            xm.mark_step()
         loss = self.criterion(estimates, sources)
+        if self.device == "xla":
+            xm.mark_step()
         return (sources, estimates)
 
     def train(self):

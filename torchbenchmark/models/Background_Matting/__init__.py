@@ -18,6 +18,8 @@ from ...util.model import BenchmarkModel
 from torchbenchmark.tasks import COMPUTER_VISION
 from torchbenchmark import DATA_PATH
 
+import torch_xla.core.xla_model as xm
+
 torch.backends.cudnn.deterministic = False
 torch.backends.cudnn.benchmark = True
 

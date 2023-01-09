@@ -17,12 +17,14 @@ import torch
 from typing import List, Optional, Dict, Any, Tuple
 from torchbenchmark import ModelTask
 
-WARMUP_ROUNDS = 3
-WORKER_TIMEOUT = 600 # seconds
+#WARMUP_ROUNDS = 3
+WARMUP_ROUNDS = 1
+#WORKER_TIMEOUT = 600 # seconds
+WORKER_TIMEOUT = 1200 # seconds
 MODEL_DIR = ['torchbenchmark', 'models']
 NANOSECONDS_PER_MILLISECONDS = 1_000_000.0
 
-def run_one_step(func, device: str, nwarmup=WARMUP_ROUNDS, num_iter=10) -> Tuple[float, Optional[Tuple[torch.Tensor]]]:
+def run_one_step(func, device: str, nwarmup=WARMUP_ROUNDS, num_iter=3) -> Tuple[float, Optional[Tuple[torch.Tensor]]]:
     "Run one step of the model, and return the latency in milliseconds."
     # Warm-up `nwarmup` rounds
     for _i in range(nwarmup):
@@ -74,7 +76,8 @@ def _validate_tests(tests: str) -> List[str]:
 
 def _validate_devices(devices: str) -> List[str]:
     devices_list = list(map(lambda x: x.strip(), devices.split(",")))
-    valid_devices = ['cpu', 'cuda']
+    #valid_devices = ['cpu', 'cuda']
+    valid_devices = ['cpu', 'cuda', 'xla']
     for d in devices_list:
         if d not in valid_devices:
             raise ValueError(f'Invalid device {d} passed into --devices. Expected devices: {valid_devices}.')

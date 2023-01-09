@@ -21,6 +21,8 @@ from torchbenchmark.tasks import NLP
 
 import io
 
+import torch_xla.core.xla_model as xm
+
 class CorpusGenerator(io.TextIOBase):
     """
     Class to Generate Random Corpus in Lieu of Using Fixed File Data.
@@ -148,6 +150,8 @@ class Model(BenchmarkModel):
         trainer = BERTTrainer(bert, len(vocab), train_dataloader=train_data_loader, test_dataloader=test_data_loader,
                                    lr=args.lr, betas=(args.adam_beta1, args.adam_beta2), weight_decay=args.adam_weight_decay,
                                    with_cuda=args.with_cuda, cuda_devices=args.cuda_devices, log_freq=args.log_freq, debug=args.debug)
+        # move trainer.model to xla if needed
+        trainer.model = trainer.model.to(self.device)
 
         example_batch = next(iter(train_data_loader))
         self.example_inputs = example_batch['bert_input'].to(self.device)[:self.batch_size], example_batch['segment_label'].to(self.device)[:self.batch_size]
@@ -163,6 +167,7 @@ class Model(BenchmarkModel):
 
     def eval(self) -> typing.Tuple[torch.Tensor]:
         model = self.model
+        #import pdb; pdb.set_trace()
         # 1. forward the next_sentence_prediction and masked_lm model
         next_sent_output, mask_lm_output = model.model.forward(*self.example_inputs)
 
@@ -172,6 +177,8 @@ class Model(BenchmarkModel):
         next_loss = model.criterion(next_sent_output, self.is_next)
         mask_loss = model.criterion(mask_lm_output.transpose(1, 2), self.bert_label)
         loss = next_loss + mask_loss
+        if self.device == 'xla':
+            xm.mark_step()
         return (next_sent_output, mask_lm_output)
 
     def train(self):

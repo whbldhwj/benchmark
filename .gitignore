@@ -17,3 +17,8 @@ te.json
 logs/
 scripts/scribe.py
 .userbenchmark/
+
+neuronxcc-*
+*.csv
+*.json
+submodules/

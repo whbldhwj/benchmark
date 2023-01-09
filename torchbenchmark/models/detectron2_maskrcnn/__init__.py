@@ -12,6 +12,8 @@ from detectron2.checkpoint import DetectionCheckpointer
 from torchbenchmark.util.model import BenchmarkModel
 from torchbenchmark.tasks import COMPUTER_VISION
 
+import torch_xla.core.xla_model as xm
+
 MODEL_NAME = os.path.basename(os.path.dirname(os.path.abspath(__file__)))
 MODEL_DIR = os.path.abspath(os.path.dirname(__file__))
 
@@ -89,6 +91,8 @@ class Model(BenchmarkModel):
         with torch.no_grad():
             for idx in range(self.NUM_BATCHES):
                 out = self.model(self.example_inputs[idx])
+                if self.device == 'xla':
+                    xm.mark_step()
         # retrieve output tensors
         outputs = []
         for item in out:

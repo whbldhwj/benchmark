@@ -5,6 +5,8 @@ import torch
 from typing import Tuple
 from .angular_tts_main import TTSModel
 
+import torch_xla.core.xla_model as xm
+
 class Model(BenchmarkModel):
     task = SPEECH.SYNTHESIS
     # Original train batch size: 64
@@ -34,4 +36,6 @@ class Model(BenchmarkModel):
 
     def eval(self) -> Tuple[torch.Tensor]:
         out = self.model.eval()
+        if self.device == 'xla':
+            xm.mark_step()
         return (out, )

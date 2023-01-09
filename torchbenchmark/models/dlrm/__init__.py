@@ -35,6 +35,7 @@ from argparse import Namespace
 from ...util.model import BenchmarkModel
 from torchbenchmark.tasks import RECOMMENDATION
 
+import torch_xla.core.xla_model as xm
 
 class Model(BenchmarkModel):
     task = RECOMMENDATION.RECOMMENDATION
@@ -198,6 +199,8 @@ class Model(BenchmarkModel):
 
     def eval(self) -> Tuple[torch.Tensor]:
         out = self.model(*self.example_inputs)
+        if self.device == 'xla':
+            xm.mark_step()
         return (out, )
 
     def train(self):

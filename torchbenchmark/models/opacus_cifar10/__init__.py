@@ -10,6 +10,7 @@ from typing import Tuple
 from ...util.model import BenchmarkModel
 from torchbenchmark.tasks import OTHER
 
+import torch_xla.core.xla_model as xm
 
 class Model(BenchmarkModel):
     task = OTHER.OTHER_TASKS
@@ -70,4 +71,6 @@ class Model(BenchmarkModel):
         targets = self.example_target
         with torch.no_grad():
             out = model(images)
+            if self.device == 'xla':
+                xm.mark_step()
         return (out, )

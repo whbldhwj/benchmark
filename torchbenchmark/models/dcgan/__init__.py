@@ -22,6 +22,8 @@ from pathlib import Path
 from ...util.model import BenchmarkModel
 from torchbenchmark.tasks import COMPUTER_VISION
 
+import torch_xla.core.xla_model as xm
+
 class DCGAN:
  def __init__(self, bench):
 
@@ -182,7 +184,7 @@ class Model(BenchmarkModel):
         # Apply the weights_init function to randomly initialize all weights
         #  to mean=0, stdev=0.2.
         netD.apply(weights_init)
-        
+
         if self.debug_print:
             # Print the model
             print(netD)
@@ -227,6 +229,7 @@ class Model(BenchmarkModel):
 
        # Since we just updated D, perform another forward pass of all-fake batch through D
        output = self.model(self.exmaple_inputs).view(-1)
+       xm.mark_step()
        return (output, )
 
     def train(self):

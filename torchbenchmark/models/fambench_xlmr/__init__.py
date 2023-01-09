@@ -4,6 +4,8 @@ import os
 from torchbenchmark import REPO_PATH
 from typing import Tuple
 
+import torch_xla.core.xla_model as xm
+
 # Import FAMBench model path
 class add_path():
     def __init__(self, path):
@@ -79,10 +81,10 @@ class Model(BenchmarkModel):
     def train(self):
         for i, (x, y_true) in enumerate(zip(self.x_l, self.y_true_l)):
             y_pred = self.xlmr.extract_features(x)
-            loss = F.cross_entropy(y_pred, y_true) 
+            loss = F.cross_entropy(y_pred, y_true)
             loss.backward()
             self.optimizer.step()
-            self.optimizer.zero_grad() 
+            self.optimizer.zero_grad()
 
     def eval(self) -> Tuple[torch.Tensor]:
         result = None
@@ -90,4 +92,6 @@ class Model(BenchmarkModel):
             for i, x in enumerate(self.x_l):
                 y_pred = self.xlmr.extract_features(x)
                 result = y_pred
+                if self.device == 'xla':
+                    xm.mark_step()
         return (result, )

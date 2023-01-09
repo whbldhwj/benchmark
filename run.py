@@ -17,7 +17,8 @@ from torchbenchmark import load_model_by_name
 import torch
 
 WARMUP_ROUNDS = 3
-SUPPORT_DEVICE_LIST = ["cpu", "cuda"]
+#SUPPORT_DEVICE_LIST = ["cpu", "cuda"]
+SUPPORT_DEVICE_LIST = ["cpu", "cuda", "xla"]
 if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
     SUPPORT_DEVICE_LIST.append("mps")
 SUPPORT_PROFILE_LIST = ["record_shapes", "profile_memory", "with_stack", "with_flops", "with_modules"]

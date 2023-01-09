@@ -4,6 +4,8 @@ from torchbenchmark.tasks import OTHER
 from ...util.model import BenchmarkModel
 from typing import Tuple
 
+import torch_xla.core.xla_model as xm
+
 def _generate_inputs(size):
     import math
     import numpy as np
@@ -147,4 +149,6 @@ class Model(BenchmarkModel):
         model, example_inputs = self.get_module()
         with torch.no_grad():
             out = model(*example_inputs)
+            if self.device == 'xla':
+                xm.mark_step()
         return out

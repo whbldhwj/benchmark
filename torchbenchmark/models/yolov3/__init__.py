@@ -10,6 +10,8 @@ import numpy as np
 torch.backends.cudnn.deterministic = False
 torch.backends.cudnn.benchmark = True
 
+import torch_xla.core.xla_model as xm
+
 from shlex import split
 from .yolo_train import prepare_training_loop
 from . import yolo_train
@@ -86,6 +88,8 @@ class Model(BenchmarkModel):
     def eval(self) -> Tuple[torch.Tensor]:
         model, example_inputs = self.get_module()
         out = model(*example_inputs, augment=False)
+        if self.device == 'xla':
+            xm.mark_step()
         pred = out[0]
         # Apply NMS
         pred = non_max_suppression(pred, 0.3, 0.6,

@@ -27,6 +27,8 @@ from torchbenchmark.tasks import NLP
 torch.backends.cudnn.deterministic = False
 torch.backends.cudnn.benchmark = False
 
+import torch_xla.core.xla_model as xm
+
 class Model(BenchmarkModel):
     task = NLP.TRANSLATION
     # Original batch size 256, hardware platform unknown
@@ -51,7 +53,7 @@ class Model(BenchmarkModel):
             n_layers=self.opt.n_layers,
             n_head=self.opt.n_head,
             dropout=self.opt.dropout).to(self.device)
-        
+
         return transformer
 
     def _preprocess(self, data_iter):
@@ -113,6 +115,8 @@ class Model(BenchmarkModel):
         result = None
         for _, (src_seq, trg_seq, gold) in zip(range(self.NUM_OF_BATCHES), self.example_inputs):
             result = self.model(*(src_seq, trg_seq))
+            if self.device == 'xla':
+                xm.mark_step()
         return (result, )
 
     def train(self):

@@ -15,6 +15,8 @@ from .sac import SACAgent
 from .replay import PrioritizedReplayBuffer, ReplayBuffer
 from .utils import hard_update, soft_update
 
+import torch_xla.core.xla_model as xm
+
 def learn_standard(
     buffer,
     target_agent,
@@ -195,7 +197,7 @@ class Model(BenchmarkModel):
 
     def set_module(self, new_model):
         self.agent.actor = new_model
-        
+
     def train(self):
         # Setup
         self.target_agent.train()
@@ -250,6 +252,8 @@ class Model(BenchmarkModel):
                         break
                     action = self.agent.forward(state)
                     state, reward, done, info = self.test_env.step(action)
+                    if self.device == 'xla':
+                        xm.mark_step()
                     episode_return += reward * (discount ** step_num)
                 episode_return_history.append(episode_return)
             retval = torch.tensor(episode_return_history)

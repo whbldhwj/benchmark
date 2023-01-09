@@ -22,6 +22,8 @@ from torchbenchmark.tasks import OTHER
 cudnn.deterministic = False
 cudnn.benchmark = True
 
+import torch_xla.core.xla_model as xm
+
 class Model(BenchmarkModel):
     task = OTHER.OTHER_TASKS
 
@@ -60,7 +62,7 @@ class Model(BenchmarkModel):
 
         if device == "cpu":
             raise NotImplementedError("DistributedDataParallel/allgather requires cuda")
-        
+
         self.model = MoCo(
             models.__dict__[self.opt.arch],
             self.opt.moco_dim, self.opt.moco_k, self.opt.moco_m, self.opt.moco_t, self.opt.mlp)
@@ -132,4 +134,6 @@ class Model(BenchmarkModel):
         """
         for i, (images, _) in enumerate(self.example_inputs):
             out = self.model(im_q=images[0], im_k=images[1])
+            if self.device == 'xla':
+                xm.mark_step()
         return out

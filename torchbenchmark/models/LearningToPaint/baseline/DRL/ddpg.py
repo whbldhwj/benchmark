@@ -10,6 +10,8 @@ from .critic import *
 from .wgan import *
 from ..utils.util import *
 
+import torch_xla.core.xla_model as xm
+
 # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Instead of having these as globals, create Decoder inside TB model and criterion in this DDPG model.
@@ -213,9 +215,17 @@ class DDPG(object):
 
     def eval(self):
         self.actor.eval()
+        if self.device == 'xla':
+            xm.mark_step()
         self.actor_target.eval()
+        if self.device == 'xla':
+            xm.mark_step()
         self.critic.eval()
+        if self.device == 'xla':
+            xm.mark_step()
         self.critic_target.eval()
+        if self.device == 'xla':
+            xm.mark_step()
 
     def train(self):
         self.actor.train()

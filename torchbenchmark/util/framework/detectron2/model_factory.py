@@ -27,6 +27,8 @@ from detectron2.data import build_detection_test_loader, build_detection_train_l
 
 from typing import Tuple
 
+import torch_xla.core.xla_model as xm
+
 def setup(args):
     if args.config_file.endswith(".yaml"):
         cfg = get_cfg()
@@ -165,6 +167,8 @@ class Detectron2Model(BenchmarkModel):
         with torch.no_grad():
             for batch_id in range(self.NUM_BATCHES):
                 out = self.model(self.example_inputs[batch_id])
+                if self.device == 'xla':
+                    xm.mark_step()
         # retrieve output tensors
         outputs = []
         for item in out:

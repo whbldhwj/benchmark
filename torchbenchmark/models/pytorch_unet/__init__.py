@@ -17,6 +17,7 @@ from .pytorch_unet.utils.dice_score import dice_loss
 from ...util.model import BenchmarkModel
 from torchbenchmark.tasks import COMPUTER_VISION
 
+import torch_xla.core.xla_model as xm
 
 class Model(BenchmarkModel):
 
@@ -83,6 +84,8 @@ class Model(BenchmarkModel):
         with torch.no_grad():
             with torch.cuda.amp.autocast(enabled=self.args.amp):
                 mask_pred = self.model(self.example_inputs)
+                if self.device == 'xla':
+                    xm.mark_step()
 
                 if self.model.n_classes == 1:
                     mask_pred = (F.sigmoid(mask_pred) > 0.5).float()

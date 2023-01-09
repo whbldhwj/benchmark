@@ -34,6 +34,7 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 logger.setLevel(logging.WARNING)
 
+import torch_xla.core.xla_model as xm
 
 class Model(BenchmarkModel):
     task = NLP.OTHER_NLP
@@ -103,6 +104,8 @@ class Model(BenchmarkModel):
         with torch.no_grad():
             for batch_x, _batch_y in self.example_inputs:
                 pred_dict = self._data_forward(self._predict_func, batch_x)
+                if self.device == 'xla':
+                    xm.mark_step()
         # return a tuple of Tensors
         return (pred_dict['pred_start'], pred_dict['pred_end'] )
 

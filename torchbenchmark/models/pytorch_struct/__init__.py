@@ -21,6 +21,8 @@ from torchbenchmark.tasks import OTHER
 torch.backends.cudnn.deterministic = False
 torch.backends.cudnn.benchmark = False
 
+import torch_xla.core.xla_model as xm
+
 def _prefetch(loader, device, limit=10):
     data = []
     for _, ex in zip(range(limit), loader):
@@ -64,7 +66,7 @@ class Model(BenchmarkModel):
     UD_TAG = Field(init_token="<bos>", eos_token="<eos>", include_lengths=True)
 
     train, val, test = UDPOS.splits(
-      fields=(('word', WORD), ('udtag', UD_TAG), (None, None)), 
+      fields=(('word', WORD), ('udtag', UD_TAG), (None, None)),
       filter_pred=lambda ex: 5 < len(ex.word) < 30
     )
 

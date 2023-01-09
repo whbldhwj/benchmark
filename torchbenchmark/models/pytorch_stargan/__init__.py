@@ -14,6 +14,8 @@ from torchbenchmark import DATA_PATH
 torch.backends.cudnn.deterministic = False
 torch.backends.cudnn.benchmark = True
 
+import torch_xla.core.xla_model as xm
+
 def _prefetch(loader, size, collate_fn):
     result = []
     for _, item in zip(range(size), loader):
@@ -80,4 +82,6 @@ class Model(BenchmarkModel):
         model = self.model
         example_inputs = self.example_inputs
         out = model(*example_inputs)
+        if self.device == 'xla':
+            xm.mark_step()
         return (out, )
